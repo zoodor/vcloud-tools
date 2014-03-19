@@ -10,5 +10,6 @@ Feature: "vcloud-vapp-diff" works as a useful command-line tool
 #    And the banner should document that this app takes options
     And the following options should be documented:
       |--version|
+      |--yaml|
     And the banner should document that this app's arguments are:
       |vdc_name|vdc_config_dir|
