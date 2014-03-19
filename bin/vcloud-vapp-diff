@@ -10,8 +10,12 @@ class App
   include Vcloud
 
   main do |vdc_name, vdc_config_dir|
-    p VappDiff.new.run(vdc_config_dir, vdc_name)
+    result = VappDiff.new.run(vdc_config_dir, vdc_name)
+    options[:yaml] ? print(result.to_yaml)  :  print(JSON.pretty_generate result)
+
   end
+
+  on("--yaml",   "Yaml output")
 
   arg :vdc_name
   arg :vdc_config_dir
