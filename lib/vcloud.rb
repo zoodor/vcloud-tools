@@ -15,6 +15,9 @@ require 'vcloud/launch'
 require 'vcloud/net_launch'
 require 'vcloud/vm_orchestrator'
 require 'vcloud/vapp_orchestrator'
+require 'vcloud/vapp_diff'
+require 'vcloud/missing_vapps_for_vdc'
+require 'vcloud/vapp_config'
 
 module Vcloud
 
