@@ -21,6 +21,8 @@ require 'vcloud/vapp_config'
 
 module Vcloud
 
+  class VdcNotFoundError < RuntimeError; end
+
   def self.logger
     @logger ||= Logger.new(STDOUT)
   end

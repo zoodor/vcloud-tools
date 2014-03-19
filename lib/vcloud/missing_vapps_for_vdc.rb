@@ -29,7 +29,12 @@ module Vcloud
     end
 
     def get_vapps_from_env(query_runner, vdc_name)
+      check_vdc_exists(query_runner, vdc_name)
       query_runner.run('vApp', {:filter => "vdcName==#{vdc_name}"})
+    end
+
+    def check_vdc_exists(query_runner, vdc_name)
+      raise Vcloud::VdcNotFoundError unless query_runner.run('orgVdc', {:filter => "name==#{vdc_name}"}).size == 1
     end
 
     def extract_names(vapps_list)

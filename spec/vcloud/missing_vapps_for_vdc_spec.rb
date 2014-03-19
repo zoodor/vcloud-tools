@@ -3,69 +3,96 @@ require 'spec_helper'
 module Vcloud
   describe MissingVappsForVdc do
 
-    context '#from_config' do
+    context 'when VDC exists' do
 
-      it 'should return a list of vapps only present in the environment' do
-        query_runner = double(:query_runner, :run => [{:name => 'that'}, {:name => 'this'}])
-        vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
+      before(:each) {
+        @query_runner = double(Vcloud::QueryRunner)
+        allow(@query_runner).to receive(:run).with('orgVdc', anything) { [:vdc_stuff] }
+      }
 
-        missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
+      context '#from_config' do
 
-        missing_vapps.from_config.should == ['that']
+        it 'should return a list of vapps only present in the environment' do
+          allow(@query_runner).to receive(:run).with('vApp', anything) {
+            [{:name => 'that'}, {:name => 'this'}]
+          }
+          vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
+
+          missing_vapps = MissingVappsForVdc.new('my vdc', @query_runner, vapps_config)
+
+          missing_vapps.from_config.should == ['that']
+        end
+
+        it 'should handle no vapps in env' do
+          allow(@query_runner).to receive(:run).with('vApp', anything) { [] }
+          vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
+
+          missing_vapps = MissingVappsForVdc.new('my vdc', @query_runner, vapps_config)
+
+          missing_vapps.from_config.should be_empty
+        end
+
+        it 'should handle no vapps in config' do
+          allow(@query_runner).to receive(:run).with('vApp', anything) { [{:name => 'that'}, {:name => 'this'}] }
+          vapps_config = double(:vdc_vapps_config, :vapps => [])
+
+          missing_vapps = MissingVappsForVdc.new('my vdc', @query_runner, vapps_config)
+
+          missing_vapps.from_config.should include('that', 'this')
+          missing_vapps.from_config.size.should == 2
+        end
+
       end
 
-      it 'should handle no vapps in env' do
-        query_runner = double(:query_runner, :run => [])
-        vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
+      context '#from_environment' do
 
-        missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
+        it 'should return a list of vapps only present in config' do
+          allow(@query_runner).to receive(:run).with('vApp', anything) { [{:name => 'that'}, {:name => 'this'}] }
+          vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
 
-        missing_vapps.from_config.should be_empty
+          missing_vapps = MissingVappsForVdc.new('my vdc', @query_runner, vapps_config)
+
+          missing_vapps.from_environment.should == ['the other']
+        end
+
+        it 'should handle no vapps in env' do
+          allow(@query_runner).to receive(:run).with('vApp', anything) { [] }
+          vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
+
+          missing_vapps = MissingVappsForVdc.new('my vdc', @query_runner, vapps_config)
+
+          missing_vapps.from_environment.should include('this', 'the other')
+          missing_vapps.from_environment.size.should == 2
+        end
+
+        it 'should handle no vapps in config' do
+          allow(@query_runner).to receive(:run).with('vApp', anything) { [{:name => 'that'}, {:name => 'this'}] }
+          vapps_config = double(:vdc_vapps_config, :vapps => [])
+
+          missing_vapps = MissingVappsForVdc.new('my vdc', @query_runner, vapps_config)
+
+          missing_vapps.from_environment.should be_empty
+        end
       end
 
-      it 'should handle no vapps in config' do
-        query_runner = double(:query_runner, :run => [{:name => 'that'}, {:name => 'this'}])
-        vapps_config = double(:vdc_vapps_config, :vapps => [])
+      context 'when VDC does NOT exist' do
 
-        missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
+        before(:each) {
+          @query_runner = double(Vcloud::QueryRunner)
+          allow(@query_runner).to receive(:run).with('orgVdc', anything) { [] }
+        }
 
-        missing_vapps.from_config.should include('that', 'this')
-        missing_vapps.from_config.size.should == 2
-      end
+        it 'should raise an error' do
+          vapps_config = double(:vdc_vapps_config, :vapps => [])
 
-    end
+          expect { MissingVappsForVdc.new('my vdc', @query_runner, vapps_config) }.
+              to raise_error(Vcloud::VdcNotFoundError)
+        end
 
-    context '#from_environment' do
-
-      it 'should return a list of vapps only present in config' do
-        query_runner = double(:query_runner, :run => [{:name => 'that'}, {:name => 'this'}])
-        vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
-
-        missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
-
-        missing_vapps.from_environment.should == ['the other']
-      end
-
-      it 'should handle no vapps in env' do
-        query_runner = double(:query_runner, :run => [])
-        vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
-
-        missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
-
-        missing_vapps.from_environment.should include('this', 'the other')
-        missing_vapps.from_environment.size.should == 2
-      end
-
-      it 'should handle no vapps in config' do
-        query_runner = double(:query_runner, :run => [{:name => 'that'}, {:name => 'this'}])
-        vapps_config = double(:vdc_vapps_config, :vapps => [])
-
-        missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
-
-        missing_vapps.from_environment.should be_empty
       end
 
     end
 
   end
+
 end
