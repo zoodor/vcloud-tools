@@ -7,8 +7,8 @@ module Vcloud
       query_runner = double(:query_runner, :run => [{:name => 'that'}, {:name => 'this'}])
       vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
 
-      vapp_diff = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
-      vapp_names = vapp_diff.from_config
+      missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
+      vapp_names = missing_vapps.from_config
 
       vapp_names.should == ['that']
     end
@@ -17,9 +17,8 @@ module Vcloud
       query_runner = double(:query_runner, :run => [{:name => 'that'}, {:name => 'this'}])
       vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
 
-
-      vapp_diff = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
-      vapp_names = vapp_diff.from_environment
+      missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
+      vapp_names = missing_vapps.from_environment
 
       vapp_names.should == ['the other']
     end
@@ -28,8 +27,8 @@ module Vcloud
       query_runner = double(:query_runner, :run => [])
       vapps_config = double(:vdc_vapps_config, :vapps => [{:name => 'this'}, {:name => 'the other'}])
 
-      vapp_diff = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
-      vapp_names = vapp_diff.from_environment
+      missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
+      vapp_names = missing_vapps.from_environment
 
       vapp_names.should == ['this', 'the other']
     end
@@ -38,8 +37,8 @@ module Vcloud
       query_runner = double(:query_runner, :run => [{:name => 'that'}, {:name => 'this'}])
       vapps_config = double(:vdc_vapps_config, :vapps => [])
 
-      vapp_diff = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
-      vapp_names = vapp_diff.from_environment
+      missing_vapps = MissingVappsForVdc.new('my vdc', query_runner, vapps_config)
+      vapp_names = missing_vapps.from_environment
 
       vapp_names.should == []
     end
