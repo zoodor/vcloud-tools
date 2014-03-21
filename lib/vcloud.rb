@@ -23,6 +23,8 @@ module Vcloud
 
   class VdcNotFoundError < RuntimeError; end
 
+  class VdcConfigDirInvalid < RuntimeError; end
+
   def self.logger
     @logger ||= Logger.new(STDOUT)
   end

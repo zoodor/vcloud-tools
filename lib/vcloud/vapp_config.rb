@@ -2,6 +2,8 @@ module Vcloud
   class VappConfig
 
     def initialize(vdc_config_dir, config_loader = Vcloud::Core::ConfigLoader.new)
+      raise Vcloud::VdcConfigDirInvalid.new("Directory does not exist: #{vdc_config_dir}") unless File.directory?(vdc_config_dir)
+
       @vdc_config_dir = vdc_config_dir
       @config_loader = config_loader
     end
